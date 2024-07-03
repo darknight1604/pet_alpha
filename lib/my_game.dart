@@ -14,8 +14,18 @@ class MyGame extends FlameGame {
 
   @override
   Future<void> onLoad() async {
-    add(cpn.Platform());
+    await images.loadAll([
+      'block.png',
+      'ember.png',
+      'ground.png',
+      'heart_half.png',
+      'heart.png',
+      'star.png',
+      'water_enemy.png',
+    ]);
 
+    add(cpn.Platform());
+    add(cpn.Player());
     _timer = Timer(
       _timeCreateThorn,
       repeat: true,

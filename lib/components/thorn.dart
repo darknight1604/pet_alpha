@@ -40,7 +40,8 @@ class _TriangularThornCustomPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 0;
+      ..strokeWidth = 0
+      ..style = PaintingStyle.stroke;
 
     final x = size.width;
     final y = size.height;

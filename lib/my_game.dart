@@ -1,21 +1,21 @@
-// import 'package:flame/components.dart';
+import 'dart:math';
 
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 
 import 'components/components.dart' as cpn;
 
-class MyGame extends FlameGame {
+class MyGame extends FlameGame with HasCollisionDetection {
   // final _world = World();
-  final gameSpeed = 1;
 
   late Timer _timer;
-  final _timeCreateThorn = 2.0;
+  final _timeCreateThorn = 5.0;
+  final random = Random();
 
   @override
   Future<void> onLoad() async {
     add(cpn.Platform());
-
+    add(cpn.Player());
     _timer = Timer(
       _timeCreateThorn,
       repeat: true,

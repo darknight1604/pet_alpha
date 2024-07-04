@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_alpha/game_setting.dart';
 import 'package:pet_alpha/my_game.dart';
 
 class Platform extends CustomPainterComponent with HasGameReference<MyGame> {
@@ -7,9 +8,8 @@ class Platform extends CustomPainterComponent with HasGameReference<MyGame> {
   Future<void> onLoad() async {
     painter = _PlatformCustomPainter();
     size = Vector2(game.canvasSize.x, 0);
-    // size = Vector2.all(game.canvasSize.x);
 
-    y = game.canvasSize.y * 0.5;
+    y = game.canvasSize.y * GameSetting.platformHeightAlpha;
   }
 }
 

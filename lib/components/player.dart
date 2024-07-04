@@ -1,24 +1,29 @@
 import 'dart:math';
 
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_alpha/game_setting.dart';
 import 'package:pet_alpha/my_game.dart';
 
 class Player extends CustomPainterComponent
     with HasGameReference<MyGame>, TapCallbacks {
   final _size = 50.0;
-  final _maximumHeightJumpable = 50.0;
+  final _maximumHeightJumpable = 120.0;
   var _isJump = false;
   final _speedJump = 2.0;
-  final _random = Random();
   late Timer _timer;
 
-  double get _baseY => game.canvasSize.y * 0.75;
+  Random get _random => game.random;
+  double get _baseY =>
+      game.canvasSize.y * GameSetting.platformHeightAlpha - _size;
 
   @override
   Future<void> onLoad() async {
-    painter = _PlayerThornCustomPainter(
+    add(RectangleHitbox());
+
+    painter = _PlayerCustomPainter(
       color: Colors.orangeAccent,
     );
     size = Vector2.all(_size);
@@ -30,12 +35,15 @@ class Player extends CustomPainterComponent
       0.25,
       repeat: true,
       onTick: () {
-        if (_isJump) {
+        if (_isJump || y != _baseY) {
           return;
         }
         final tinyPlayerSize =
             Vector2.all(1 + _random.nextDouble() * _size * 0.2);
-        final position = Vector2(x, y + _size - tinyPlayerSize.y);
+        final position = Vector2(
+          x - tinyPlayerSize.x,
+          y + _size - tinyPlayerSize.y,
+        );
         game.add(
           TinyPlayer(
             size: tinyPlayerSize,
@@ -93,7 +101,7 @@ class TinyPlayer extends CustomPainterComponent with HasGameReference<MyGame> {
 
   @override
   Future<void> onLoad() async {
-    painter = _PlayerThornCustomPainter(
+    painter = _PlayerCustomPainter(
       color: color,
       paintingStyle: PaintingStyle.fill,
     );
@@ -112,11 +120,11 @@ class TinyPlayer extends CustomPainterComponent with HasGameReference<MyGame> {
   }
 }
 
-class _PlayerThornCustomPainter extends CustomPainter {
+class _PlayerCustomPainter extends CustomPainter {
   final Color color;
   final PaintingStyle paintingStyle;
 
-  _PlayerThornCustomPainter({
+  _PlayerCustomPainter({
     required this.color,
     this.paintingStyle = PaintingStyle.stroke,
   });

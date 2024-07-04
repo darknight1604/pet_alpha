@@ -27,8 +27,10 @@ class Thorn extends CustomPainterComponent with HasGameReference<MyGame> {
 
   @override
   void update(double dt) {
-    super.update(dt);
     x -= game.gameSpeed;
+    if (x < 0 - _size) {
+      game.remove(this);
+    }
   }
 }
 

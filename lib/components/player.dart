@@ -24,9 +24,15 @@ class Player extends CustomPainterComponent
   @override
   Future<void> onLoad() async {
     add(RectangleHitbox());
-
     painter = _PlayerCustomPainter(
       color: Colors.orangeAccent,
+      secondColor: Colors.greenAccent,
+      centerColor: Color.fromRGBO(
+        _random.nextInt(256),
+        _random.nextInt(256),
+        _random.nextInt(256),
+        _random.nextDouble(),
+      ),
     );
     size = Vector2.all(_size);
 
@@ -34,7 +40,7 @@ class Player extends CustomPainterComponent
     anchor = Anchor.center;
 
     _timer = Timer(
-      0.25,
+      0.15,
       repeat: true,
       onTick: _onTick,
     );
@@ -78,7 +84,8 @@ class Player extends CustomPainterComponent
     if (_isJump || y != _baseY) {
       return;
     }
-    final tinyPlayerSize = Vector2.all(1 + _random.nextDouble() * _size * 0.2);
+    // final tinyPlayerSize = Vector2.all(1 + _random.nextDouble() * _size * 0.2);
+    final tinyPlayerSize = Vector2.all(4);
     final position = Vector2(
       x - tinyPlayerSize.x - _size * 0.5,
       y + _size * 0.5 - tinyPlayerSize.y,
@@ -87,59 +94,94 @@ class Player extends CustomPainterComponent
       TinyPlayer(
         size: tinyPlayerSize,
         position: position,
-        // color: Color.fromRGBO(
-        //   _random.nextInt(256),
-        //   _random.nextInt(256),
-        //   _random.nextInt(256),
-        //   _random.nextDouble(),
-        // ),
         color: Colors.yellowAccent,
+        opacity: 1,
+      ),
+    );
+    game.add(
+      TinyPlayer(
+        size: tinyPlayerSize,
+        position: position,
+        color: Color.fromRGBO(
+          _random.nextInt(256),
+          _random.nextInt(256),
+          _random.nextInt(256),
+          _random.nextDouble(),
+        ),
+        opacity: 1,
+        isFly: _random.nextBool(),
+      ),
+    );
+    game.add(
+      TinyPlayer(
+        size: tinyPlayerSize,
+        position: position,
+        color: Color.fromRGBO(
+          _random.nextInt(256),
+          _random.nextInt(256),
+          _random.nextInt(256),
+          _random.nextDouble(),
+        ),
+        opacity: 1,
+        isFly: _random.nextBool(),
       ),
     );
   }
 }
 
-class TinyPlayer extends CustomPainterComponent with HasGameReference<MyGame> {
+class TinyPlayer extends CustomPainterComponent
+    with HasGameReference<MyGame>
+    implements OpacityProvider {
   final Color color;
+  final bool isFly;
+
+  @override
+  double opacity;
+
   TinyPlayer({
     required this.color,
+    required this.opacity,
     super.size,
     super.position,
+    this.isFly = false,
   });
 
   late Timer _timer;
 
   @override
   Future<void> onLoad() async {
-    painter = _PlayerCustomPainter(
+    painter = _TinyPlayerCustomPainter(
       color: color,
       paintingStyle: PaintingStyle.fill,
-      forTiny: true,
     );
     _timer = Timer(
-      2,
+      1,
       onTick: () {
         game.remove(this);
       },
+    );
+    add(
+      OpacityEffect.fadeOut(EffectController(duration: 1)),
     );
   }
 
   @override
   void update(double dt) {
     x -= 1;
+    if (isFly) {
+      y -= 0.2;
+    }
     _timer.update(dt);
   }
 }
 
-class _PlayerCustomPainter extends CustomPainter {
+class _TinyPlayerCustomPainter extends CustomPainter {
   final Color color;
   final PaintingStyle paintingStyle;
-  final bool forTiny;
 
-  _PlayerCustomPainter({
+  _TinyPlayerCustomPainter({
     required this.color,
     this.paintingStyle = PaintingStyle.stroke,
-    this.forTiny = false,
   });
 
   @override
@@ -159,12 +201,64 @@ class _PlayerCustomPainter extends CustomPainter {
         ..lineTo(0, 0),
       paint,
     );
+  }
 
-    if (forTiny) {
-      return;
-    }
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+}
 
-    canvas.drawCircle(Offset(x * 0.25, y * 0.25), 10, paint);
+class _PlayerCustomPainter extends CustomPainter {
+  final Color color;
+  final Color secondColor;
+  final Color centerColor;
+
+  _PlayerCustomPainter({
+    required this.color,
+    required this.secondColor,
+    required this.centerColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1
+      ..style = PaintingStyle.fill;
+    const double scaleHeight = 0.25;
+
+    final x = size.width;
+    final y = size.height;
+    final path = Path()
+      ..lineTo(0, y)
+      ..lineTo(x * scaleHeight, y * (1 - scaleHeight))
+      ..lineTo(x * scaleHeight, y * scaleHeight)
+      ..lineTo(x * (1 - scaleHeight), y * scaleHeight)
+      ..lineTo(x, 0)
+      ..lineTo(0, 0);
+    canvas.drawPath(path, paint);
+
+    final path2 = Path()
+      ..moveTo(x, 0)
+      ..lineTo(x, y)
+      ..lineTo(0, y)
+      ..lineTo(x * scaleHeight, y * (1 - scaleHeight))
+      ..lineTo(x * (1 - scaleHeight), y * (1 - scaleHeight))
+      ..lineTo(x * (1 - scaleHeight), y * scaleHeight)
+      ..lineTo(x, 0);
+    canvas.drawPath(
+      path2,
+      paint..color = secondColor,
+    );
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: Offset(x * 0.5, y * 0.5),
+        width: 10,
+        height: 10,
+      ),
+      paint..color = centerColor,
+    );
   }
 
   @override

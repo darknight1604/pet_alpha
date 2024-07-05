@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
+import 'package:flame/geometry.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_alpha/game_setting.dart';
 import 'package:pet_alpha/my_game.dart';
@@ -17,7 +19,7 @@ class Player extends CustomPainterComponent
 
   Random get _random => game.random;
   double get _baseY =>
-      game.canvasSize.y * GameSetting.platformHeightAlpha - _size;
+      game.canvasSize.y * GameSetting.platformHeightAlpha - _size * 0.5;
 
   @override
   Future<void> onLoad() async {
@@ -28,36 +30,13 @@ class Player extends CustomPainterComponent
     );
     size = Vector2.all(_size);
 
-    x = game.canvasSize.x * 0.5;
-    y = _baseY;
+    position = Vector2(game.canvasSize.x * 0.5, _baseY);
+    anchor = Anchor.center;
 
     _timer = Timer(
       0.25,
       repeat: true,
-      onTick: () {
-        if (_isJump || y != _baseY) {
-          return;
-        }
-        final tinyPlayerSize =
-            Vector2.all(1 + _random.nextDouble() * _size * 0.2);
-        final position = Vector2(
-          x - tinyPlayerSize.x,
-          y + _size - tinyPlayerSize.y,
-        );
-        game.add(
-          TinyPlayer(
-            size: tinyPlayerSize,
-            position: position,
-            // color: Color.fromRGBO(
-            //   _random.nextInt(256),
-            //   _random.nextInt(256),
-            //   _random.nextInt(256),
-            //   _random.nextDouble(),
-            // ),
-            color: Colors.yellowAccent,
-          ),
-        );
-      },
+      onTick: _onTick,
     );
   }
 
@@ -86,6 +65,37 @@ class Player extends CustomPainterComponent
   @override
   void onTapDown(TapDownEvent event) {
     _isJump = true;
+
+    add(
+      RotateEffect.by(
+        tau / 2,
+        EffectController(duration: 2),
+      ),
+    );
+  }
+
+  void _onTick() {
+    if (_isJump || y != _baseY) {
+      return;
+    }
+    final tinyPlayerSize = Vector2.all(1 + _random.nextDouble() * _size * 0.2);
+    final position = Vector2(
+      x - tinyPlayerSize.x - _size * 0.5,
+      y + _size * 0.5 - tinyPlayerSize.y,
+    );
+    game.add(
+      TinyPlayer(
+        size: tinyPlayerSize,
+        position: position,
+        // color: Color.fromRGBO(
+        //   _random.nextInt(256),
+        //   _random.nextInt(256),
+        //   _random.nextInt(256),
+        //   _random.nextDouble(),
+        // ),
+        color: Colors.yellowAccent,
+      ),
+    );
   }
 }
 
@@ -104,6 +114,7 @@ class TinyPlayer extends CustomPainterComponent with HasGameReference<MyGame> {
     painter = _PlayerCustomPainter(
       color: color,
       paintingStyle: PaintingStyle.fill,
+      forTiny: true,
     );
     _timer = Timer(
       2,
@@ -123,10 +134,12 @@ class TinyPlayer extends CustomPainterComponent with HasGameReference<MyGame> {
 class _PlayerCustomPainter extends CustomPainter {
   final Color color;
   final PaintingStyle paintingStyle;
+  final bool forTiny;
 
   _PlayerCustomPainter({
     required this.color,
     this.paintingStyle = PaintingStyle.stroke,
+    this.forTiny = false,
   });
 
   @override
@@ -146,6 +159,12 @@ class _PlayerCustomPainter extends CustomPainter {
         ..lineTo(0, 0),
       paint,
     );
+
+    if (forTiny) {
+      return;
+    }
+
+    canvas.drawCircle(Offset(x * 0.25, y * 0.25), 10, paint);
   }
 
   @override

@@ -11,6 +11,7 @@ class MyGame extends FlameGame with HasCollisionDetection {
   late Timer _timer;
   final _timeCreateThorn = 5.0;
   final random = Random();
+  var gameOver = false;
 
   @override
   Future<void> onLoad() async {
@@ -29,5 +30,10 @@ class MyGame extends FlameGame with HasCollisionDetection {
   void update(double dt) {
     super.update(dt);
     _timer.update(dt);
+    // if (gameOver) {
+    //   removeAll(children.whereType<cpn.Thorn>());
+    //   removeAll(children.whereType<cpn.Player>());
+    //   _timer.reset();
+    // }
   }
 }

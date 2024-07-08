@@ -13,10 +13,13 @@ class MyGame extends FlameGame with HasCollisionDetection {
   final random = Random();
   var gameOver = false;
 
+  Vector2 get centerPosition => Vector2(canvasSize.x * 0.5, canvasSize.y * 0.5);
+
   @override
   Future<void> onLoad() async {
     add(cpn.Platform());
     add(cpn.Player());
+
     _timer = Timer(
       _timeCreateThorn,
       repeat: true,
@@ -29,11 +32,22 @@ class MyGame extends FlameGame with HasCollisionDetection {
   @override
   void update(double dt) {
     super.update(dt);
+    if (gameOver) {
+      add(cpn.Replay());
+      // overlays.add('PauseMenu');
+      Future.delayed(const Duration(milliseconds: 20), () => pauseEngine());
+      return;
+    }
     _timer.update(dt);
-    // if (gameOver) {
-    //   removeAll(children.whereType<cpn.Thorn>());
-    //   removeAll(children.whereType<cpn.Player>());
-    //   _timer.reset();
-    // }
+  }
+
+  void resetGame() {
+    gameOver = false;
+    // overlays.remove('PauseMenu');
+    removeWhere((component) {
+      return component is cpn.Thorn;
+    });
+
+    Future.delayed(const Duration(milliseconds: 20), () => resumeEngine());
   }
 }

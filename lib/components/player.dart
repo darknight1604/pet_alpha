@@ -70,6 +70,12 @@ class Player extends CustomPainterComponent
 
   @override
   void onTapDown(TapDownEvent event) {
+    if (game.gameOver) {
+      return;
+    }
+    if (_isJump || y != _baseY) {
+      return;
+    }
     _isJump = true;
 
     add(

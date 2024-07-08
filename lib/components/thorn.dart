@@ -54,7 +54,8 @@ class Thorn extends CustomPainterComponent
     PositionComponent other,
   ) {
     if (other is Player) {
-      game.pauseEngine();
+      game.gameOver = true;
+      // game.pauseEngine();
     }
     super.onCollisionStart(intersectionPoints, other);
   }
